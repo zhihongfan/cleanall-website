@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanAll — One key press. Clean screen. Instant escape.</title>
+  <meta name="description" content="CleanAll instantly hides all windows, mutes sound, and opens a cover app with a single hotkey. Available for macOS and Windows." />
+  <meta property="og:title" content="CleanAll — Panic Button for macOS & Windows" />
+  <meta property="og:description" content="One key press. Clean screen. Instant escape." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:            #070711;
+      --bg-alt:        #0c0c18;
+      --surface:       #12121f;
+      --surface-hover: #18182c;
+      --border:        #1c1c32;
+      --border-hover:  #2a2a48;
+
+      --text:          #eeeef5;
+      --text-sec:      #9090a8;
+      --text-muted:    #505068;
+
+      --green:         #00c896;
+      --green-glow:    rgba(0,200,150,0.18);
+      --green-glow-s:  rgba(0,200,150,0.32);
+      --purple:        #a855f7;
+      --purple-glow:   rgba(168,85,247,0.18);
+      --orange:        #f59e0b;
+      --orange-glow:   rgba(245,158,11,0.18);
+
+      --radius:        16px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── Stars ─────────────────────────────────────────────── */
+    #stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .star {
+      position: absolute; border-radius: 50%; background: #fff;
+      animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: var(--lo, 0.15); transform: scale(1); }
+      50%      { opacity: var(--hi, 0.7);  transform: scale(1.5); }
+    }
+
+    /* ─── Aurora ─────────────────────────────────────────────── */
+    .aurora {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .aurora-band {
+      position: absolute; left: -60%; right: -60%; height: 340px;
+      border-radius: 50%; filter: blur(60px);
+      mix-blend-mode: screen;
+    }
+    .aurora-band:nth-child(1) {
+      top: -80px; background: rgba(0,200,150,0.30);
+      animation: aurora1 20s ease-in-out infinite alternate;
+    }
+    .aurora-band:nth-child(2) {
+      top: 40px; background: rgba(168,85,247,0.28);
+      animation: aurora2 26s ease-in-out infinite alternate;
+    }
+    .aurora-band:nth-child(3) {
+      top: 120px; background: rgba(0,180,255,0.18);
+      animation: aurora3 22s ease-in-out infinite alternate;
+    }
+    .aurora-band:nth-child(4) {
+      top: -20px; background: rgba(245,158,11,0.10);
+      animation: aurora4 30s ease-in-out infinite alternate;
+    }
+    @keyframes aurora1 { from { transform: translateX(-15%) skewX(-8deg); } to { transform: translateX(15%) skewX(8deg); } }
+    @keyframes aurora2 { from { transform: translateX(10%) skewX(6deg); }  to { transform: translateX(-20%) skewX(-6deg); } }
+    @keyframes aurora3 { from { transform: translateX(-20%) skewX(10deg); } to { transform: translateX(20%) skewX(-10deg); } }
+    @keyframes aurora4 { from { transform: translateX(5%) skewX(-4deg); }  to { transform: translateX(-10%) skewX(4deg); } }
+
+    /* ─── Nav ────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px; display: flex; align-items: center;
+      padding: 0 clamp(16px, 4vw, 48px);
+      transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(7,7,17,0.85);
+      backdrop-filter: blur(20px);
+      border-color: var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 17px; letter-spacing: -0.3px;
+    }
+    .nav-logo { width: 32px; height: 32px; border-radius: 8px; }
+    .nav-links {
+      display: flex; align-items: center; gap: 2px;
+      margin-left: auto; margin-right: 24px;
+    }
+    .nav-links a {
+      padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      color: var(--text-sec); transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--surface); }
+    .nav-cta {
+      padding: 8px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      background: linear-gradient(135deg, var(--green), #00a87e);
+      color: #fff;
+      box-shadow: 0 0 20px var(--green-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 30px var(--green-glow-s); }
+
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      margin-left: auto; cursor: pointer; padding: 4px;
+    }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--text-sec); border-radius: 2px; transition: 0.3s; }
+    .nav-mobile {
+      display: none; position: absolute; top: 64px; left: 0; right: 0;
+      background: rgba(7,7,17,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 16px;
+      flex-direction: column; gap: 4px;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      padding: 12px 16px; border-radius: 10px; font-size: 15px; font-weight: 500;
+      color: var(--text-sec); transition: color 0.2s, background 0.2s;
+    }
+    .nav-mobile a:hover { color: var(--text); background: var(--surface); }
+
+    /* ─── Hero ───────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center;
+      padding: 120px clamp(16px, 6vw, 80px) 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero-logo {
+      width: 100px; height: 100px; border-radius: 22px;
+      margin-bottom: 32px;
+      box-shadow: 0 0 0 1px var(--border), 0 0 60px rgba(0,200,150,0.25), 0 20px 60px rgba(0,0,0,0.5);
+      animation: float 4.5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+    .hero-title {
+      font-size: clamp(46px, 8vw, 80px);
+      font-weight: 800;
+      letter-spacing: -2.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #00c896 45%, #a855f7 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: gradient-shift 6s ease-in-out infinite, fade-up 0.6s ease both;
+    }
+    @keyframes gradient-shift {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+    .hero-tagline {
+      font-size: clamp(16px, 2.5vw, 21px);
+      color: var(--text-sec);
+      max-width: 500px;
+      margin-bottom: 40px;
+      animation: fade-up 0.6s ease 0.15s both;
+    }
+    .hero-ctas {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 28px;
+      animation: fade-up 0.6s ease 0.3s both;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px;
+      font-size: 16px; font-weight: 600;
+      background: linear-gradient(135deg, var(--green) 0%, #00a87e 100%);
+      color: #fff;
+      box-shadow: 0 0 30px var(--green-glow-s);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      animation: shimmer 3.5s ease infinite;
+    }
+    @keyframes shimmer { 0%,100% { left: -100%; } 50% { left: 140%; } }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px var(--green-glow-s); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px;
+      font-size: 16px; font-weight: 600;
+      border: 1.5px solid var(--border-hover); color: var(--text-sec);
+      background: transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .btn-outline:hover { color: var(--text); border-color: var(--green); background: var(--green-glow); }
+    .hero-meta {
+      font-size: 14px; color: var(--text-muted); font-weight: 500;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+      animation: fade-up 0.6s ease 0.45s both;
+    }
+    .hero-meta span { display: flex; align-items: center; gap: 6px; }
+    .hero-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Sections ──────────────────────────────────────────── */
+    section { position: relative; padding: 100px clamp(16px, 6vw, 80px); }
+    .section-header { text-align: center; margin-bottom: 60px; }
+    .section-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800; letter-spacing: -1px; margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 17px; color: var(--text-sec); max-width: 520px; margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ─── Features ──────────────────────────────────────────── */
+    #features { background: var(--bg-alt); }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+    .feature-card.green:hover  { border-color: var(--green); box-shadow: 0 0 40px var(--green-glow); }
+    .feature-card.orange:hover { border-color: var(--orange); box-shadow: 0 0 40px var(--orange-glow); }
+    .feature-card.purple:hover { border-color: var(--purple); box-shadow: 0 0 40px var(--purple-glow); }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 24px;
+    }
+    .feature-icon.green  { background: var(--green-glow);  color: var(--green); }
+    .feature-icon.orange { background: var(--orange-glow); color: var(--orange); }
+    .feature-icon.purple { background: var(--purple-glow); color: var(--purple); }
+    .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p  { font-size: 15px; color: var(--text-sec); line-height: 1.65; }
+
+    /* ─── How It Works ──────────────────────────────────────── */
+    #how-it-works {}
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 32px; max-width: 900px; margin: 0 auto;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute; top: 32px; left: calc(33.33% + 0px); right: calc(33.33% + 0px);
+      height: 1px; background: linear-gradient(90deg, var(--green), var(--purple));
+      opacity: 0.3;
+    }
+    .step { text-align: center; }
+    .step-num {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 2px solid var(--green); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 22px; font-weight: 800; color: var(--green);
+      box-shadow: 0 0 0 0 var(--green-glow-s);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .step:nth-child(2) .step-num { border-color: var(--purple); color: var(--purple); animation: pulse-glow-p 3s ease-in-out infinite 0.5s; }
+    .step:nth-child(3) .step-num { border-color: var(--orange); color: var(--orange); animation: pulse-glow-o 3s ease-in-out infinite 1s; }
+    @keyframes pulse-glow   { 0%,100% { box-shadow: 0 0 0 0 var(--green-glow-s); }  50% { box-shadow: 0 0 0 12px rgba(0,200,150,0); } }
+    @keyframes pulse-glow-p { 0%,100% { box-shadow: 0 0 0 0 var(--purple-glow); }   50% { box-shadow: 0 0 0 12px rgba(168,85,247,0); } }
+    @keyframes pulse-glow-o { 0%,100% { box-shadow: 0 0 0 0 var(--orange-glow); }   50% { box-shadow: 0 0 0 12px rgba(245,158,11,0); } }
+    .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+    .step p   { font-size: 15px; color: var(--text-sec); line-height: 1.65; }
+    .keycap {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 8px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+      background: var(--surface); border: 1px solid var(--border-hover);
+      color: var(--text-sec); margin: 0 2px;
+    }
+
+    /* ─── Guard Mode ────────────────────────────────────────── */
+    #guard-mode { background: var(--bg-alt); }
+    .guard-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+      max-width: 960px; margin: 0 auto;
+    }
+    .guard-text .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      background: var(--green-glow); border: 1px solid rgba(0,200,150,0.3);
+      color: var(--green); margin-bottom: 20px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.5s ease-in-out infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .guard-text h2 {
+      font-size: clamp(26px, 3.5vw, 38px); font-weight: 800; letter-spacing: -1px;
+      margin-bottom: 18px; line-height: 1.15;
+    }
+    .guard-text p { font-size: 16px; color: var(--text-sec); line-height: 1.7; margin-bottom: 14px; }
+
+    /* Mock Menu Bar UI */
+    .mock-ui {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 0; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
+    }
+    .mock-titlebar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .mock-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .mock-dot.red    { background: #ff5f56; }
+    .mock-dot.yellow { background: #febc2e; }
+    .mock-dot.green  { background: #28c840; }
+    .mock-menubar-title {
+      margin-left: 8px; font-size: 13px; font-weight: 600; color: var(--text-sec);
+    }
+    .mock-body { padding: 24px; }
+    .mock-menubar {
+      display: flex; align-items: center; justify-content: flex-end; gap: 16px;
+      padding: 10px 16px; background: rgba(255,255,255,0.04); border-radius: 10px;
+      margin-bottom: 20px; border: 1px solid var(--border);
+    }
+    .mock-menubar-icons { display: flex; gap: 10px; align-items: center; }
+    .mock-icon { font-size: 16px; opacity: 0.6; }
+    .mock-icon.active { opacity: 1; }
+    .mock-state {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px; background: var(--bg); border-radius: 10px;
+      border: 1px solid var(--border); margin-bottom: 12px;
+      transition: all 0.4s;
+    }
+    .mock-state.armed  { border-color: rgba(0,200,150,0.3); background: rgba(0,200,150,0.06); }
+    .mock-state.disarm { border-color: var(--border); }
+    .state-indicator {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--text-muted); flex-shrink: 0;
+    }
+    .mock-state.armed .state-indicator {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    .state-label { font-size: 13px; font-weight: 600; color: var(--text-sec); }
+    .mock-state.armed .state-label { color: var(--green); }
+    .state-desc { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+    .mock-toggle {
+      display: flex; gap: 8px; margin-top: 16px;
+    }
+    .toggle-btn {
+      flex: 1; padding: 10px; border-radius: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      text-align: center; cursor: pointer; border: 1px solid;
+      transition: all 0.3s; text-transform: uppercase;
+    }
+    .toggle-btn.active {
+      background: var(--green-glow); border-color: var(--green); color: var(--green);
+    }
+    .toggle-btn.inactive {
+      background: transparent; border-color: var(--border); color: var(--text-muted);
+    }
+
+    /* ─── Story ─────────────────────────────────────────────── */
+    #story {}
+    .story-inner {
+      max-width: 680px; margin: 0 auto; position: relative;
+    }
+    .story-quote {
+      position: absolute; top: -20px; left: -20px;
+      font-size: 140px; line-height: 1; font-weight: 800;
+      color: var(--green); opacity: 0.08; pointer-events: none;
+      font-family: Georgia, serif; user-select: none;
+    }
+    .story-inner h2 {
+      font-size: clamp(26px, 3.5vw, 38px); font-weight: 800; letter-spacing: -1px;
+      margin-bottom: 32px; line-height: 1.15; position: relative;
+    }
+    .story-inner p {
+      font-size: 17px; color: var(--text-sec); line-height: 1.75;
+      margin-bottom: 20px; position: relative;
+    }
+    .story-inner p:last-child {
+      font-size: 18px; color: var(--text); font-weight: 500;
+    }
+
+    /* ─── Download CTA ──────────────────────────────────────── */
+    #download {
+      background: var(--bg-alt); text-align: center;
+    }
+    .download-inner { max-width: 600px; margin: 0 auto; }
+    .download-inner h2 {
+      font-size: clamp(30px, 4vw, 48px); font-weight: 800; letter-spacing: -1.5px;
+      margin-bottom: 14px; line-height: 1.15;
+    }
+    .download-inner p { font-size: 17px; color: var(--text-sec); margin-bottom: 36px; line-height: 1.65; }
+    .download-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-platform {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 15px 28px; border-radius: 12px; font-size: 15px; font-weight: 700;
+      border: 1.5px solid var(--border-hover); color: var(--text-sec);
+      background: var(--surface);
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .btn-platform .platform-icon { font-size: 20px; }
+    .btn-platform .platform-name { font-size: 12px; display: block; font-weight: 500; color: var(--text-muted); }
+    .btn-platform strong { display: block; font-size: 15px; font-weight: 700; }
+    .btn-platform.mac:hover  { border-color: var(--green); color: var(--text); background: var(--green-glow); box-shadow: 0 0 30px var(--green-glow); }
+    .btn-platform.win:hover  { border-color: var(--purple); color: var(--text); background: var(--purple-glow); box-shadow: 0 0 30px var(--purple-glow); }
+    .download-meta {
+      margin-top: 20px; font-size: 13px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap;
+    }
+    .price-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700;
+      background: linear-gradient(135deg, var(--green-glow), var(--purple-glow));
+      border: 1px solid var(--green); color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    footer {
+      padding: 28px clamp(16px, 6vw, 80px);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-copy { font-size: 14px; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 4px; }
+    .footer-links a {
+      padding: 4px 10px; border-radius: 6px; font-size: 14px;
+      color: var(--text-muted); transition: color 0.2s, background 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); background: var(--surface); }
+
+    /* ─── Scroll reveal ─────────────────────────────────────── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 1023px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid    { grid-template-columns: 1fr; gap: 40px; }
+      .steps-grid::before { display: none; }
+      .guard-inner   { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .nav-links, .nav-cta { display: none; }
+      .nav-hamburger { display: flex; }
+      .hero-ctas { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+      footer { flex-direction: column; text-align: center; }
+    }
+
+    /* ─── Extras ─────────────────────────────────────────────── */
+    .glow-divider {
+      width: 80px; height: 3px; border-radius: 2px; margin: 0 auto 24px;
+      background: linear-gradient(90deg, var(--green), var(--purple));
+    }
+    .platform-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .platform-badge.mac {
+      background: var(--green-glow); border: 1px solid rgba(0,200,150,0.3); color: var(--green);
+    }
+    .platform-badge.win {
+      background: var(--purple-glow); border: 1px solid rgba(168,85,247,0.3); color: var(--purple);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div id="stars"></div>
+
+<!-- Nav -->
+<nav id="navbar">
+  <a href="#" class="nav-brand">
+    <svg class="nav-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="110" fill="#111"/>
+      <ellipse cx="256" cy="138" rx="58" ry="54" fill="white"/>
+      <ellipse cx="256" cy="295" rx="162" ry="156" fill="white"/>
+      <circle cx="93"  cy="282" r="46" fill="white"/>
+      <circle cx="419" cy="282" r="46" fill="white"/>
+      <rect x="114" y="220" width="130" height="86" rx="26" fill="#111"/>
+      <rect x="268" y="220" width="130" height="86" rx="26" fill="#111"/>
+      <path d="M 128 234 Q 158 224 188 230" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
+      <path d="M 282 234 Q 312 224 342 230" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
+    </svg>
+    CleanAll
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#guard-mode">Guard Mode</a>
+    <a href="#story">Story</a>
+    <a href="#download">Download</a>
+  </div>
+  <a href="#download" class="nav-cta">Get CleanAll</a>
+  <div class="nav-hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="nav-mobile" id="mobile-menu">
+    <a href="#features" class="mobile-link">Features</a>
+    <a href="#how-it-works" class="mobile-link">How It Works</a>
+    <a href="#guard-mode" class="mobile-link">Guard Mode</a>
+    <a href="#story" class="mobile-link">Story</a>
+    <a href="#download" class="mobile-link">Download</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="aurora">
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+  </div>
+
+  <svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="110" fill="#111"/>
+    <ellipse cx="256" cy="138" rx="58" ry="54" fill="white"/>
+    <ellipse cx="256" cy="295" rx="162" ry="156" fill="white"/>
+    <circle cx="93"  cy="282" r="46" fill="white"/>
+    <circle cx="419" cy="282" r="46" fill="white"/>
+    <rect x="114" y="220" width="130" height="86" rx="26" fill="#111"/>
+    <rect x="268" y="220" width="130" height="86" rx="26" fill="#111"/>
+    <path d="M 128 234 Q 158 224 188 230" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
+    <path d="M 282 234 Q 312 224 342 230" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </svg>
+
+  <h1 class="hero-title">CleanAll</h1>
+  <p class="hero-tagline">One key press. Clean screen. Instant escape.</p>
+
+  <div class="hero-ctas">
+    <a href="#download" class="btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v8M8 12l4 4 4-4"/></svg>
+      Download for macOS
+    </a>
+    <a href="#download" class="btn-outline">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Download for Windows
+    </a>
+  </div>
+
+  <div class="hero-meta">
+    <span>macOS 13+</span>
+    <span class="dot"></span>
+    <span>Windows 10+</span>
+    <span class="dot"></span>
+    <span>Free to try</span>
+    <span class="dot"></span>
+    <span>~6.2 MB</span>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="section-header reveal">
+    <div class="glow-divider"></div>
+    <h2 class="section-title">Three actions. One key.</h2>
+    <p class="section-sub">CleanAll performs three critical actions simultaneously the moment you press your hotkey.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card green reveal reveal-delay-1">
+      <div class="feature-icon green">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg>
+      </div>
+      <h3>Hide All Windows</h3>
+      <p>Instantly minimizes or hides every visible window across all applications. Your screen goes clean in milliseconds.</p>
+    </div>
+    <div class="feature-card orange reveal reveal-delay-2">
+      <div class="feature-icon orange">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      </div>
+      <h3>Mute Sound</h3>
+      <p>Mutes all system audio instantly. Music, podcasts, videos — everything goes silent simultaneously.</p>
+    </div>
+    <div class="feature-card purple reveal reveal-delay-3">
+      <div class="feature-icon purple">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      </div>
+      <h3>Cover Action</h3>
+      <p>Opens a cover file or launches an app — a spreadsheet, Slack, Xcode, or anything that looks like real work.</p>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works">
+  <div class="section-header reveal">
+    <div class="glow-divider"></div>
+    <h2 class="section-title">How it works</h2>
+    <p class="section-sub">Set up once, use forever. Three simple steps to total screen privacy.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step reveal reveal-delay-1">
+      <div class="step-num">1</div>
+      <h3>Set your hotkey</h3>
+      <p>Choose any key combination. <span class="keycap">⌘</span><span class="keycap">⇧</span><span class="keycap">H</span> or whatever feels natural.</p>
+    </div>
+    <div class="step reveal reveal-delay-2">
+      <div class="step-num">2</div>
+      <h3>Configure your cover</h3>
+      <p>Pick a file or an app — a spreadsheet, Slack, Xcode, anything that looks like legitimate work.</p>
+    </div>
+    <div class="step reveal reveal-delay-3">
+      <div class="step-num">3</div>
+      <h3>Press and relax</h3>
+      <p>One key press hides everything, mutes sound, and opens your cover. Done in milliseconds.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Guard Mode -->
+<section id="guard-mode">
+  <div class="guard-inner">
+    <div class="guard-text reveal">
+      <div class="badge"><span class="badge-dot"></span> Feature Highlight</div>
+      <h2>Guard Mode</h2>
+      <p>Guard Mode lives in your menu bar. When armed, CleanAll watches for any key press and is ready to act instantly — no hotkey needed.</p>
+      <p>Toggle between armed and disarmed states with a single click. The menu bar icon changes to reflect the current state — so you always know if you're protected.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+        <span class="platform-badge mac">macOS</span>
+        <span class="platform-badge win">Windows</span>
+      </div>
+    </div>
+    <div class="mock-ui reveal reveal-delay-1">
+      <div class="mock-titlebar">
+        <div class="mock-dot red"></div>
+        <div class="mock-dot yellow"></div>
+        <div class="mock-dot green"></div>
+        <span class="mock-menubar-title">CleanAll — Guard Mode</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-menubar">
+          <div class="mock-menubar-icons">
+            <span class="mock-icon">🔋</span>
+            <span class="mock-icon">📶</span>
+            <span class="mock-icon active">🦍</span>
+          </div>
+        </div>
+        <div class="mock-state armed" id="mock-armed">
+          <div class="state-indicator"></div>
+          <span class="state-label">Guard Armed</span>
+          <span class="state-desc">Watching for any key press</span>
+        </div>
+        <div class="mock-state disarm" id="mock-disarm" style="opacity:0.45;">
+          <div class="state-indicator"></div>
+          <span class="state-label" style="color:var(--text-muted)">Guard Disabled</span>
+          <span class="state-desc">Click to arm</span>
+        </div>
+        <div class="mock-toggle">
+          <div class="toggle-btn active">Armed</div>
+          <div class="toggle-btn inactive">Disarmed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Story -->
+<section id="story">
+  <div class="story-inner">
+    <div class="story-quote">"</div>
+    <h2 class="reveal">Why we built this</h2>
+    <p class="reveal reveal-delay-1">We built CleanAll because we've all had that moment — someone walks up behind you and your screen is… not exactly what you'd call productive.</p>
+    <p class="reveal reveal-delay-2">Maybe it's a YouTube rabbit hole. Maybe it's online shopping. Maybe it's just scrolling social media at 2pm on a Tuesday.</p>
+    <p class="reveal reveal-delay-2">The frantic <span class="keycap">⌘H</span>, <span class="keycap">⌘M</span>, scramble-to-click-something dance never works fast enough. By the time you've hidden everything, they've already seen it.</p>
+    <p class="reveal reveal-delay-3">So we built the panic button we always wanted — one key, everything gone, cover story up. Done in milliseconds. Available for both Mac and Windows, because no one should be left unprotected.</p>
+  </div>
+</section>
+
+<!-- Download -->
+<section id="download">
+  <div class="download-inner">
+    <h2 class="reveal reveal-delay-1">Ready to disappear?</h2>
+    <p class="reveal reveal-delay-2">Download CleanAll and set up your panic button in seconds. Works on macOS and Windows.</p>
+    <div class="download-btns reveal reveal-delay-3">
+      <a href="#" class="btn-platform mac">
+        <span class="platform-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        </span>
+        <div>
+          <span class="platform-name">Download for</span>
+          <strong>macOS</strong>
+        </div>
+      </a>
+      <a href="#" class="btn-platform win">
+        <span class="platform-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.57H3zm17 0V3l-9 1.32V12h9zm-17 1h6v6.57l-6-1.32V13zm17 0h-9v7.68L20 22V13z"/></svg>
+        </span>
+        <div>
+          <span class="platform-name">Download for</span>
+          <strong>Windows</strong>
+        </div>
+      </a>
+    </div>
+    <div class="download-meta reveal">
+      <span>macOS 13.0+</span>
+      <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
+      <span>Windows 10+</span>
+      <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
+      <span>~6.2 MB</span>
+      <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
+      <span>Free to try, then unlock to keep</span>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-copy">© 2026 CleanAll. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Support</a>
+    <a href="#">Terms</a>
+  </div>
+</footer>
+
+<script>
+  /* ── Stars ── */
+  (function() {
+    const container = document.getElementById('stars');
+    const count = 120;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2 + 0.5;
+      s.style.cssText = [
+        `width:${size}px`, `height:${size}px`,
+        `top:${Math.random()*100}%`, `left:${Math.random()*100}%`,
+        `--dur:${(Math.random()*4+2).toFixed(1)}s`,
+        `--delay:-${(Math.random()*5).toFixed(1)}s`,
+        `--lo:${(Math.random()*0.2+0.05).toFixed(2)}`,
+        `--hi:${(Math.random()*0.6+0.3).toFixed(2)}`
+      ].join(';');
+      container.appendChild(s);
+    }
+  })();
+
+  /* ── Nav scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  /* ── Hamburger ── */
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+  });
+  document.querySelectorAll('.mobile-link').forEach(link => {
+    link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  });
+
+  /* ── Scroll reveal ── */
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  /* ── Guard Mode toggle animation ── */
+  (function() {
+    const armed  = document.getElementById('mock-armed');
+    const disarm = document.getElementById('mock-disarm');
+    const btns   = document.querySelectorAll('.toggle-btn');
+    let isArmed  = true;
+
+    function setState(arm) {
+      isArmed = arm;
+      armed.style.opacity  = arm ? '1'    : '0.45';
+      disarm.style.opacity = arm ? '0.45' : '1';
+      armed.classList.toggle('armed',  arm);
+      disarm.classList.toggle('armed', !arm);
+      btns[0].className = 'toggle-btn ' + (arm  ? 'active' : 'inactive');
+      btns[1].className = 'toggle-btn ' + (!arm ? 'active' : 'inactive');
+    }
+
+    btns.forEach((btn, i) => btn.addEventListener('click', () => setState(i === 0)));
+
+    // Auto-cycle for demo
+    setInterval(() => setState(!isArmed), 3500);
+  })();
+</script>
+</body>
+</html>
