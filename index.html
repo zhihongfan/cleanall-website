@@ -111,13 +111,26 @@
     .nav-logo { width: 32px; height: 32px; border-radius: 8px; }
     .nav-links {
       display: flex; align-items: center; gap: 2px;
-      margin-left: auto; margin-right: 24px;
+      margin-left: auto; margin-right: 12px;
     }
     .nav-links a {
       padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
       color: var(--text-sec); transition: color 0.2s, background 0.2s;
     }
     .nav-links a:hover { color: var(--text); background: var(--surface); }
+
+    /* ─── Language Toggle ────────────────────────────────────── */
+    .lang-toggle {
+      display: flex; align-items: center;
+      padding: 5px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+      border: 1px solid var(--border-hover);
+      color: var(--text-sec); background: transparent;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s;
+      margin-right: 10px; white-space: nowrap;
+    }
+    .lang-toggle:hover { color: var(--text); border-color: var(--green); background: var(--green-glow); }
+
     .nav-cta {
       padding: 8px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
       background: linear-gradient(135deg, var(--green), #00a87e);
@@ -144,6 +157,11 @@
       color: var(--text-sec); transition: color 0.2s, background 0.2s;
     }
     .nav-mobile a:hover { color: var(--text); background: var(--surface); }
+    .nav-mobile .mobile-lang-toggle {
+      padding: 12px 16px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      color: var(--green); background: var(--green-glow);
+      border: none; text-align: left; cursor: pointer; width: 100%;
+    }
 
     /* ─── Hero ───────────────────────────────────────────────── */
     .hero {
@@ -488,7 +506,7 @@
     }
     @media (max-width: 767px) {
       .features-grid { grid-template-columns: 1fr; }
-      .nav-links, .nav-cta { display: none; }
+      .nav-links, .nav-cta, .lang-toggle { display: none; }
       .nav-hamburger { display: flex; }
       .hero-ctas { flex-direction: column; align-items: center; }
       .btn-primary, .btn-outline { width: 100%; justify-content: center; }
@@ -535,22 +553,24 @@
     CleanAll
   </a>
   <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#how-it-works">How It Works</a>
-    <a href="#guard-mode">Guard Mode</a>
-    <a href="#story">Story</a>
-    <a href="#download">Download</a>
+    <a href="#features" data-i18n="nav.features">Features</a>
+    <a href="#how-it-works" data-i18n="nav.how">How It Works</a>
+    <a href="#guard-mode" data-i18n="nav.guard">Guard Mode</a>
+    <a href="#story" data-i18n="nav.story">Story</a>
+    <a href="#download" data-i18n="nav.download">Download</a>
   </div>
-  <a href="#download" class="nav-cta">Get CleanAll</a>
+  <button class="lang-toggle" id="lang-toggle" aria-label="Switch language">中文</button>
+  <a href="#download" class="nav-cta" data-i18n="nav.cta">Get CleanAll</a>
   <div class="nav-hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </div>
   <div class="nav-mobile" id="mobile-menu">
-    <a href="#features" class="mobile-link">Features</a>
-    <a href="#how-it-works" class="mobile-link">How It Works</a>
-    <a href="#guard-mode" class="mobile-link">Guard Mode</a>
-    <a href="#story" class="mobile-link">Story</a>
-    <a href="#download" class="mobile-link">Download</a>
+    <a href="#features" class="mobile-link" data-i18n="nav.features">Features</a>
+    <a href="#how-it-works" class="mobile-link" data-i18n="nav.how">How It Works</a>
+    <a href="#guard-mode" class="mobile-link" data-i18n="nav.guard">Guard Mode</a>
+    <a href="#story" class="mobile-link" data-i18n="nav.story">Story</a>
+    <a href="#download" class="mobile-link" data-i18n="nav.download">Download</a>
+    <button class="mobile-lang-toggle" id="mobile-lang-toggle">切换为 中文</button>
   </div>
 </nav>
 
@@ -576,16 +596,16 @@
   </svg>
 
   <h1 class="hero-title">CleanAll</h1>
-  <p class="hero-tagline">One key press. Clean screen. Instant escape.</p>
+  <p class="hero-tagline" data-i18n="hero.tagline">One key press. Clean screen. Instant escape.</p>
 
   <div class="hero-ctas">
     <a href="#download" class="btn-primary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v8M8 12l4 4 4-4"/></svg>
-      Download for macOS
+      <span data-i18n="hero.btn.mac">Download for macOS</span>
     </a>
     <a href="#download" class="btn-outline">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      Download for Windows
+      <span data-i18n="hero.btn.win">Download for Windows</span>
     </a>
   </div>
 
@@ -594,7 +614,7 @@
     <span class="dot"></span>
     <span>Windows 10+</span>
     <span class="dot"></span>
-    <span>Free to try</span>
+    <span data-i18n="hero.meta.free">Free to try</span>
     <span class="dot"></span>
     <span>~6.2 MB</span>
   </div>
@@ -604,30 +624,30 @@
 <section id="features">
   <div class="section-header reveal">
     <div class="glow-divider"></div>
-    <h2 class="section-title">Three actions. One key.</h2>
-    <p class="section-sub">CleanAll performs three critical actions simultaneously the moment you press your hotkey.</p>
+    <h2 class="section-title" data-i18n="features.title">Three actions. One key.</h2>
+    <p class="section-sub" data-i18n="features.sub">CleanAll performs three critical actions simultaneously the moment you press your hotkey.</p>
   </div>
   <div class="features-grid">
     <div class="feature-card green reveal reveal-delay-1">
       <div class="feature-icon green">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg>
       </div>
-      <h3>Hide All Windows</h3>
-      <p>Instantly minimizes or hides every visible window across all applications. Your screen goes clean in milliseconds.</p>
+      <h3 data-i18n="feature1.title">Hide All Windows</h3>
+      <p data-i18n="feature1.desc">Instantly minimizes or hides every visible window across all applications. Your screen goes clean in milliseconds.</p>
     </div>
     <div class="feature-card orange reveal reveal-delay-2">
       <div class="feature-icon orange">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
       </div>
-      <h3>Mute Sound</h3>
-      <p>Mutes all system audio instantly. Music, podcasts, videos — everything goes silent simultaneously.</p>
+      <h3 data-i18n="feature2.title">Mute Sound</h3>
+      <p data-i18n="feature2.desc">Mutes all system audio instantly. Music, podcasts, videos — everything goes silent simultaneously.</p>
     </div>
     <div class="feature-card purple reveal reveal-delay-3">
       <div class="feature-icon purple">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
       </div>
-      <h3>Cover Action</h3>
-      <p>Opens a cover file or launches an app — a spreadsheet, Slack, Xcode, or anything that looks like real work.</p>
+      <h3 data-i18n="feature3.title">Cover Action</h3>
+      <p data-i18n="feature3.desc">Opens a cover file or launches an app — a spreadsheet, Slack, Xcode, or anything that looks like real work.</p>
     </div>
   </div>
 </section>
@@ -636,24 +656,24 @@
 <section id="how-it-works">
   <div class="section-header reveal">
     <div class="glow-divider"></div>
-    <h2 class="section-title">How it works</h2>
-    <p class="section-sub">Set up once, use forever. Three simple steps to total screen privacy.</p>
+    <h2 class="section-title" data-i18n="how.title">How it works</h2>
+    <p class="section-sub" data-i18n="how.sub">Set up once, use forever. Three simple steps to total screen privacy.</p>
   </div>
   <div class="steps-grid">
     <div class="step reveal reveal-delay-1">
       <div class="step-num">1</div>
-      <h3>Set your hotkey</h3>
-      <p>Choose any key combination. <span class="keycap">⌘</span><span class="keycap">⇧</span><span class="keycap">H</span> or whatever feels natural.</p>
+      <h3 data-i18n="step1.title">Set your hotkey</h3>
+      <p data-i18n-html="step1.desc">Choose any key combination. <span class="keycap">⌘</span><span class="keycap">⇧</span><span class="keycap">H</span> or whatever feels natural.</p>
     </div>
     <div class="step reveal reveal-delay-2">
       <div class="step-num">2</div>
-      <h3>Configure your cover</h3>
-      <p>Pick a file or an app — a spreadsheet, Slack, Xcode, anything that looks like legitimate work.</p>
+      <h3 data-i18n="step2.title">Configure your cover</h3>
+      <p data-i18n="step2.desc">Pick a file or an app — a spreadsheet, Slack, Xcode, anything that looks like legitimate work.</p>
     </div>
     <div class="step reveal reveal-delay-3">
       <div class="step-num">3</div>
-      <h3>Press and relax</h3>
-      <p>One key press hides everything, mutes sound, and opens your cover. Done in milliseconds.</p>
+      <h3 data-i18n="step3.title">Press and relax</h3>
+      <p data-i18n="step3.desc">One key press hides everything, mutes sound, and opens your cover. Done in milliseconds.</p>
     </div>
   </div>
 </section>
@@ -662,10 +682,10 @@
 <section id="guard-mode">
   <div class="guard-inner">
     <div class="guard-text reveal">
-      <div class="badge"><span class="badge-dot"></span> Feature Highlight</div>
-      <h2>Guard Mode</h2>
-      <p>Guard Mode lives in your menu bar. When armed, CleanAll watches for any key press and is ready to act instantly — no hotkey needed.</p>
-      <p>Toggle between armed and disarmed states with a single click. The menu bar icon changes to reflect the current state — so you always know if you're protected.</p>
+      <div class="badge"><span class="badge-dot"></span> <span data-i18n="guard.badge">Feature Highlight</span></div>
+      <h2 data-i18n="guard.title">Guard Mode</h2>
+      <p data-i18n="guard.p1">Guard Mode lives in your menu bar. When armed, CleanAll watches for any key press and is ready to act instantly — no hotkey needed.</p>
+      <p data-i18n="guard.p2">Toggle between armed and disarmed states with a single click. The menu bar icon changes to reflect the current state — so you always know if you're protected.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
         <span class="platform-badge mac">macOS</span>
         <span class="platform-badge win">Windows</span>
@@ -676,7 +696,7 @@
         <div class="mock-dot red"></div>
         <div class="mock-dot yellow"></div>
         <div class="mock-dot green"></div>
-        <span class="mock-menubar-title">CleanAll — Guard Mode</span>
+        <span class="mock-menubar-title" data-i18n="mock.title">CleanAll — Guard Mode</span>
       </div>
       <div class="mock-body">
         <div class="mock-menubar">
@@ -688,17 +708,17 @@
         </div>
         <div class="mock-state armed" id="mock-armed">
           <div class="state-indicator"></div>
-          <span class="state-label">Guard Armed</span>
-          <span class="state-desc">Watching for any key press</span>
+          <span class="state-label" data-i18n="mock.armed.label">Guard Armed</span>
+          <span class="state-desc" data-i18n="mock.armed.desc">Watching for any key press</span>
         </div>
         <div class="mock-state disarm" id="mock-disarm" style="opacity:0.45;">
           <div class="state-indicator"></div>
-          <span class="state-label" style="color:var(--text-muted)">Guard Disabled</span>
-          <span class="state-desc">Click to arm</span>
+          <span class="state-label" style="color:var(--text-muted)" data-i18n="mock.disarm.label">Guard Disabled</span>
+          <span class="state-desc" data-i18n="mock.disarm.desc">Click to arm</span>
         </div>
         <div class="mock-toggle">
-          <div class="toggle-btn active">Armed</div>
-          <div class="toggle-btn inactive">Disarmed</div>
+          <div class="toggle-btn active" data-i18n="mock.btn.armed">Armed</div>
+          <div class="toggle-btn inactive" data-i18n="mock.btn.disarmed">Disarmed</div>
         </div>
       </div>
     </div>
@@ -709,27 +729,27 @@
 <section id="story">
   <div class="story-inner">
     <div class="story-quote">"</div>
-    <h2 class="reveal">Why we built this</h2>
-    <p class="reveal reveal-delay-1">We built CleanAll because we've all had that moment — someone walks up behind you and your screen is… not exactly what you'd call productive.</p>
-    <p class="reveal reveal-delay-2">Maybe it's a YouTube rabbit hole. Maybe it's online shopping. Maybe it's just scrolling social media at 2pm on a Tuesday.</p>
-    <p class="reveal reveal-delay-2">The frantic <span class="keycap">⌘H</span>, <span class="keycap">⌘M</span>, scramble-to-click-something dance never works fast enough. By the time you've hidden everything, they've already seen it.</p>
-    <p class="reveal reveal-delay-3">So we built the panic button we always wanted — one key, everything gone, cover story up. Done in milliseconds. Available for both Mac and Windows, because no one should be left unprotected.</p>
+    <h2 class="reveal" data-i18n="story.title">Why we built this</h2>
+    <p class="reveal reveal-delay-1" data-i18n="story.p1">We built CleanAll because we've all had that moment — someone walks up behind you and your screen is… not exactly what you'd call productive.</p>
+    <p class="reveal reveal-delay-2" data-i18n="story.p2">Maybe it's a YouTube rabbit hole. Maybe it's online shopping. Maybe it's just scrolling social media at 2pm on a Tuesday.</p>
+    <p class="reveal reveal-delay-2" data-i18n-html="story.p3">The frantic <span class="keycap">⌘H</span>, <span class="keycap">⌘M</span>, scramble-to-click-something dance never works fast enough. By the time you've hidden everything, they've already seen it.</p>
+    <p class="reveal reveal-delay-3" data-i18n="story.p4">So we built the panic button we always wanted — one key, everything gone, cover story up. Done in milliseconds. Available for both Mac and Windows, because no one should be left unprotected.</p>
   </div>
 </section>
 
 <!-- Download -->
 <section id="download">
   <div class="download-inner">
-    <h2 class="reveal reveal-delay-1">Ready to disappear?</h2>
-    <p class="reveal reveal-delay-2">Download CleanAll and set up your panic button in seconds. Works on macOS and Windows.</p>
+    <h2 class="reveal reveal-delay-1" data-i18n="download.title">Ready to disappear?</h2>
+    <p class="reveal reveal-delay-2" data-i18n="download.sub">Download CleanAll and set up your panic button in seconds. Works on macOS and Windows.</p>
     <div class="download-btns reveal reveal-delay-3">
       <a href="#" class="btn-platform mac">
         <span class="platform-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
         </span>
         <div>
-          <span class="platform-name">Download for</span>
-          <strong>macOS</strong>
+          <span class="platform-name" data-i18n="download.for">Download for</span>
+          <strong data-i18n="download.mac">macOS</strong>
         </div>
       </a>
       <a href="#" class="btn-platform win">
@@ -737,8 +757,8 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.57H3zm17 0V3l-9 1.32V12h9zm-17 1h6v6.57l-6-1.32V13zm17 0h-9v7.68L20 22V13z"/></svg>
         </span>
         <div>
-          <span class="platform-name">Download for</span>
-          <strong>Windows</strong>
+          <span class="platform-name" data-i18n="download.for">Download for</span>
+          <strong data-i18n="download.win">Windows</strong>
         </div>
       </a>
     </div>
@@ -749,22 +769,188 @@
       <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
       <span>~6.2 MB</span>
       <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
-      <span>Free to try, then unlock to keep</span>
+      <span data-i18n="download.meta">Free to try, then unlock to keep</span>
     </div>
   </div>
 </section>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-copy">© 2026 CleanAll. All rights reserved.</div>
+  <div class="footer-copy" data-i18n="footer.copy">© 2026 CleanAll. All rights reserved.</div>
   <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Support</a>
-    <a href="#">Terms</a>
+    <a href="#" data-i18n="footer.privacy">Privacy Policy</a>
+    <a href="#" data-i18n="footer.support">Support</a>
+    <a href="#" data-i18n="footer.terms">Terms</a>
   </div>
 </footer>
 
 <script>
+  /* ── i18n ── */
+  const i18n = {
+    en: {
+      'nav.features':       'Features',
+      'nav.how':            'How It Works',
+      'nav.guard':          'Guard Mode',
+      'nav.story':          'Story',
+      'nav.download':       'Download',
+      'nav.cta':            'Get CleanAll',
+      'hero.tagline':       'One key press. Clean screen. Instant escape.',
+      'hero.btn.mac':       'Download for macOS',
+      'hero.btn.win':       'Download for Windows',
+      'hero.meta.free':     'Free to try',
+      'features.title':     'Three actions. One key.',
+      'features.sub':       'CleanAll performs three critical actions simultaneously the moment you press your hotkey.',
+      'feature1.title':     'Hide All Windows',
+      'feature1.desc':      'Instantly minimizes or hides every visible window across all applications. Your screen goes clean in milliseconds.',
+      'feature2.title':     'Mute Sound',
+      'feature2.desc':      'Mutes all system audio instantly. Music, podcasts, videos — everything goes silent simultaneously.',
+      'feature3.title':     'Cover Action',
+      'feature3.desc':      'Opens a cover file or launches an app — a spreadsheet, Slack, Xcode, or anything that looks like real work.',
+      'how.title':          'How it works',
+      'how.sub':            'Set up once, use forever. Three simple steps to total screen privacy.',
+      'step1.title':        'Set your hotkey',
+      'step1.desc':         'Choose any key combination. <span class="keycap">⌘</span><span class="keycap">⇧</span><span class="keycap">H</span> or whatever feels natural.',
+      'step2.title':        'Configure your cover',
+      'step2.desc':         'Pick a file or an app — a spreadsheet, Slack, Xcode, anything that looks like legitimate work.',
+      'step3.title':        'Press and relax',
+      'step3.desc':         'One key press hides everything, mutes sound, and opens your cover. Done in milliseconds.',
+      'guard.badge':        'Feature Highlight',
+      'guard.title':        'Guard Mode',
+      'guard.p1':           'Guard Mode lives in your menu bar. When armed, CleanAll watches for any key press and is ready to act instantly — no hotkey needed.',
+      'guard.p2':           'Toggle between armed and disarmed states with a single click. The menu bar icon changes to reflect the current state — so you always know if you\'re protected.',
+      'mock.title':         'CleanAll — Guard Mode',
+      'mock.armed.label':   'Guard Armed',
+      'mock.armed.desc':    'Watching for any key press',
+      'mock.disarm.label':  'Guard Disabled',
+      'mock.disarm.desc':   'Click to arm',
+      'mock.btn.armed':     'Armed',
+      'mock.btn.disarmed':  'Disarmed',
+      'story.title':        'Why we built this',
+      'story.p1':           'We built CleanAll because we\'ve all had that moment — someone walks up behind you and your screen is… not exactly what you\'d call productive.',
+      'story.p2':           'Maybe it\'s a YouTube rabbit hole. Maybe it\'s online shopping. Maybe it\'s just scrolling social media at 2pm on a Tuesday.',
+      'story.p3':           'The frantic <span class="keycap">⌘H</span>, <span class="keycap">⌘M</span>, scramble-to-click-something dance never works fast enough. By the time you\'ve hidden everything, they\'ve already seen it.',
+      'story.p4':           'So we built the panic button we always wanted — one key, everything gone, cover story up. Done in milliseconds. Available for both Mac and Windows, because no one should be left unprotected.',
+      'download.title':     'Ready to disappear?',
+      'download.sub':       'Download CleanAll and set up your panic button in seconds. Works on macOS and Windows.',
+      'download.for':       'Download for',
+      'download.mac':       'macOS',
+      'download.win':       'Windows',
+      'download.meta':      'Free to try, then unlock to keep',
+      'footer.copy':        '© 2026 CleanAll. All rights reserved.',
+      'footer.privacy':     'Privacy Policy',
+      'footer.support':     'Support',
+      'footer.terms':       'Terms',
+    },
+    zh: {
+      'nav.features':       '功能',
+      'nav.how':            '使用方法',
+      'nav.guard':          '守卫模式',
+      'nav.story':          '关于我们',
+      'nav.download':       '下载',
+      'nav.cta':            '立即下载',
+      'hero.tagline':       '一键清空，回到工作界面。',
+      'hero.btn.mac':       '下载 macOS 版',
+      'hero.btn.win':       '下载 Windows 版',
+      'hero.meta.free':     '免费试用',
+      'features.title':     '三件事，一瞬间。',
+      'features.sub':       '一键触发，CleanAll 同步执行三个关键动作，全程不到一秒。',
+      'feature1.title':     '隐藏所有窗口',
+      'feature1.desc':      '瞬间最小化或隐藏全部应用窗口。屏幕干净到让人心安。',
+      'feature2.title':     '立即静音',
+      'feature2.desc':      '系统音量即时归零。音乐、播客、视频——世界，安静了。',
+      'feature3.title':     '掩护动作',
+      'feature3.desc':      '自动打开掩护文件或应用——表格、Slack、Xcode，看起来像在认真工作。',
+      'how.title':          '三步，搞定一切。',
+      'how.sub':            '配置一次，终身受用。三个步骤，构建完整的屏幕防护。',
+      'step1.title':        '设定快捷键',
+      'step1.desc':         '随心选择任意组合键。<span class="keycap">⌘</span><span class="keycap">⇧</span><span class="keycap">H</span> 或任何顺手的键位。',
+      'step2.title':        '配置掩护内容',
+      'step2.desc':         '选择一个文件或应用——表格、Slack、Xcode，任何看起来像正经工作的东西。',
+      'step3.title':        '按下，放松',
+      'step3.desc':         '一键隐藏一切，静音，打开掩护。一切，在毫秒之间完成。',
+      'guard.badge':        '功能亮点',
+      'guard.title':        '守卫模式',
+      'guard.p1':           '守卫模式常驻菜单栏。一旦激活，CleanAll 时刻监测任意按键，随时准备出击——无需热键。',
+      'guard.p2':           '一键切换激活与待机状态，菜单栏图标实时反映当前状态——让你随时知道自己是否处于保护之中。',
+      'mock.title':         'CleanAll — 守卫模式',
+      'mock.armed.label':   '守卫已激活',
+      'mock.armed.desc':    '监控中，随时待命',
+      'mock.disarm.label':  '守卫已关闭',
+      'mock.disarm.desc':   '点击激活',
+      'mock.btn.armed':     '已激活',
+      'mock.btn.disarmed':  '已关闭',
+      'story.title':        '为什么我们做了这个',
+      'story.p1':           '这一切源于那个人人都经历过的瞬间——有人突然走到你身后，而你的屏幕上……嗯，与「高效工作」没什么关系。',
+      'story.p2':           '也许是 YouTube 的兔子洞。也许是在网上血拼。也许只是周二下午两点在刷社交媒体。',
+      'story.p3':           '那套熟悉的慌乱操作——<span class="keycap">⌘H</span>、<span class="keycap">⌘M</span>、手忙脚乱点某个东西……永远不够快。等你把窗口都藏好，他们早就看见了。',
+      'story.p4':           '所以我们造了一个我们一直想要的紧急按钮——一键清屏，一键掩护，毫秒完成。Mac 和 Windows 都能用，因为每个人都值得被保护。',
+      'download.title':     '准备好消失了吗？',
+      'download.sub':       '下载 CleanAll，几秒内完成配置，启动你的紧急按钮。支持 macOS 与 Windows。',
+      'download.for':       '下载',
+      'download.mac':       'macOS',
+      'download.win':       'Windows',
+      'download.meta':      '免费试用，买断解锁',
+      'footer.copy':        '© 2026 CleanAll. 保留所有权利。',
+      'footer.privacy':     '隐私政策',
+      'footer.support':     '技术支持',
+      'footer.terms':       '条款',
+    }
+  };
+
+  let currentLang = 'en';
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const t = i18n[lang];
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.dataset.i18nHtml;
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = lang === 'zh'
+      ? 'CleanAll — 一键清屏，瞬间脱身。'
+      : 'CleanAll — One key press. Clean screen. Instant escape.';
+
+    const toggleBtn = document.getElementById('lang-toggle');
+    const mobileToggleBtn = document.getElementById('mobile-lang-toggle');
+    if (toggleBtn) toggleBtn.textContent = lang === 'zh' ? 'EN' : '中文';
+    if (mobileToggleBtn) mobileToggleBtn.textContent = lang === 'zh' ? 'Switch to English' : '切换为中文';
+
+    try { localStorage.setItem('cleanall-lang', lang); } catch(e) {}
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'zh' ? 'en' : 'zh');
+  }
+
+  // Detect language: saved preference > browser language > English
+  (function() {
+    let lang = 'en';
+    try {
+      const saved = localStorage.getItem('cleanall-lang');
+      if (saved === 'zh' || saved === 'en') {
+        lang = saved;
+      } else {
+        const browser = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        if (browser.startsWith('zh')) lang = 'zh';
+      }
+    } catch(e) {}
+    applyLang(lang);
+  })();
+
+  document.getElementById('lang-toggle').addEventListener('click', toggleLang);
+  document.getElementById('mobile-lang-toggle').addEventListener('click', () => {
+    toggleLang();
+    document.getElementById('mobile-menu').classList.remove('open');
+  });
+
   /* ── Stars ── */
   (function() {
     const container = document.getElementById('stars');
